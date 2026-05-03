@@ -50,7 +50,7 @@ https://mieter.techem.de/de/PRUN:HZ3:DEU01:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/con
 |--------|-------------|---------|
 | Techem Heizung | Aktueller Monatsverbrauch | kWh |
 | Techem Heizung Energieverbrauch (Dashboard) | Kumulierter Gesamtverbrauch für das HA Energie-Dashboard | kWh |
-| Techem Heizung Gebäudedurchschnitt | Durchschnitt der Liegenschaft | kWh |
+| Techem Heizung Gebäudedurchschnitt | Vergleichbare Haushalte | kWh |
 | Techem Heizung HCU | Heizkostenverteiler-Einheiten | HCU |
 | Warmwasser Volumen | Warmwasserverbrauch (falls vorhanden) | m³ |
 
