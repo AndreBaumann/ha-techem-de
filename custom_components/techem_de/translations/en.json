@@ -1,0 +1,23 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Techem Tenant Portal",
+                "description": "Enter your Techem tenant portal credentials.",
+                "data": {
+                    "email": "Email address",
+                    "password": "Password",
+                    "property_id": "Property ID (optional, e.g. PRUN:HZ3:DEU01:...)",
+                    "scan_interval": "Update interval (minutes)"
+                }
+            }
+        },
+        "error": {
+            "invalid_auth": "Authentication failed. Check email and password.",
+            "cannot_connect": "Cannot connect to Techem portal."
+        },
+        "abort": {
+            "already_configured": "This account is already configured."
+        }
+    }
+}

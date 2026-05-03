@@ -1,0 +1,23 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Techem Mieterportal",
+                "description": "Gib deine Techem Mieterportal Zugangsdaten ein.",
+                "data": {
+                    "email": "E-Mail-Adresse",
+                    "password": "Passwort",
+                    "property_id": "Property-ID (optional, z.B. PRUN:HZ3:DEU01:...)",
+                    "scan_interval": "Aktualisierungsintervall (Minuten)"
+                }
+            }
+        },
+        "error": {
+            "invalid_auth": "Authentifizierung fehlgeschlagen. Prüfe E-Mail und Passwort.",
+            "cannot_connect": "Verbindung zum Techem Portal nicht möglich."
+        },
+        "abort": {
+            "already_configured": "Dieses Konto ist bereits eingerichtet."
+        }
+    }
+}
