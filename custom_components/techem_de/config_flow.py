@@ -54,12 +54,18 @@ class TechemDEConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
                 await client.authenticate()
+                # If property_id was empty, it may now be auto-detected from the token
+                if not property_id and client.property_id:
+                    property_id = client.property_id
             except TechemAuthError as err:
                 _LOGGER.error("Authentication failed: %s", err)
                 errors["base"] = "invalid_auth"
             except Exception as err:
                 _LOGGER.exception("Unexpected error during authentication")
                 errors["base"] = "cannot_connect"
+
+            if not errors and not property_id:
+                errors["base"] = "no_property_id"
 
             if not errors:
                 # Ensure unique entry per email

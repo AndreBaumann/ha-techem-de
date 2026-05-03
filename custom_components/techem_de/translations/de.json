@@ -7,14 +7,15 @@
                 "data": {
                     "email": "E-Mail-Adresse",
                     "password": "Passwort",
-                    "property_id": "Property-ID (optional, z.B. PRUN:HZ3:DEU01:...)",
+                    "property_id": "Property-ID (leer lassen für automatische Erkennung)",
                     "scan_interval": "Aktualisierungsintervall (Minuten)"
                 }
             }
         },
         "error": {
             "invalid_auth": "Authentifizierung fehlgeschlagen. Prüfe E-Mail und Passwort.",
-            "cannot_connect": "Verbindung zum Techem Portal nicht möglich."
+            "cannot_connect": "Verbindung zum Techem Portal nicht möglich.",
+            "no_property_id": "Property-ID konnte nicht automatisch erkannt werden. Bitte manuell eingeben."
         },
         "abort": {
             "already_configured": "Dieses Konto ist bereits eingerichtet."

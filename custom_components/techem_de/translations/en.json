@@ -7,14 +7,15 @@
                 "data": {
                     "email": "Email address",
                     "password": "Password",
-                    "property_id": "Property ID (optional, e.g. PRUN:HZ3:DEU01:...)",
+                    "property_id": "Property ID (leave empty for auto-detection)",
                     "scan_interval": "Update interval (minutes)"
                 }
             }
         },
         "error": {
             "invalid_auth": "Authentication failed. Check email and password.",
-            "cannot_connect": "Cannot connect to Techem portal."
+            "cannot_connect": "Cannot connect to Techem portal.",
+            "no_property_id": "Property ID could not be auto-detected. Please enter manually."
         },
         "abort": {
             "already_configured": "This account is already configured."

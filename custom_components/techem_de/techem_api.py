@@ -64,6 +64,34 @@ class TechemApiClient:
         """Set the property ID."""
         self._property_id = value
 
+    def _extract_property_id_from_token(self, token: str) -> str | None:
+        """Extract the property ID from JWT token's rentalAgreements claim.
+
+        The claim format is:
+        {PropertyID};{PartyID};{StartDate};;{active}
+        """
+        try:
+            payload_b64 = token.split(".")[1]
+            # Add padding
+            padding = 4 - len(payload_b64) % 4
+            if padding != 4:
+                payload_b64 += "=" * padding
+            payload = json.loads(base64.urlsafe_b64decode(payload_b64))
+            agreements = payload.get("rentalAgreements", [])
+            if agreements:
+                # Take the first active agreement
+                for agreement in agreements:
+                    parts = agreement.split(";")
+                    if len(parts) >= 1 and parts[0]:
+                        # Check if active (last field is "true")
+                        if len(parts) >= 5 and parts[4].lower() == "true":
+                            return parts[0]
+                # Fallback: return first agreement's property_id regardless
+                return agreements[0].split(";")[0]
+        except (IndexError, json.JSONDecodeError, ValueError) as err:
+            _LOGGER.debug("Could not extract property_id from token: %s", err)
+        return None
+
     def _generate_pkce(self) -> tuple[str, str]:
         """Generate PKCE code_verifier and code_challenge."""
         code_verifier = (
@@ -244,6 +272,17 @@ class TechemApiClient:
         self._access_token = tokens["access_token"]
         self._refresh_token = tokens.get("refresh_token")
 
+        # Auto-detect property_id from JWT if not manually configured
+        if not self._property_id:
+            detected_id = self._extract_property_id_from_token(self._access_token)
+            if detected_id:
+                self._property_id = detected_id
+                _LOGGER.info(
+                    "Auto-detected property_id from token: %s", detected_id
+                )
+            else:
+                _LOGGER.warning("No property_id configured and could not detect from token")
+
         _LOGGER.info("Techem authentication successful")
         return self._access_token
 
@@ -294,7 +333,10 @@ class TechemApiClient:
             await self.authenticate()
 
         if not self._property_id:
-            raise TechemApiError("Property ID (Residential Unit ID) ist nicht konfiguriert.")
+            raise TechemApiError(
+                "Property ID konnte nicht ermittelt werden. "
+                "Bitte manuell in der Konfiguration angeben."
+            )
 
         data = await self._fetch_current_period_data()
         return data

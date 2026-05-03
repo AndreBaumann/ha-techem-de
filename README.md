@@ -7,7 +7,7 @@ Custom Integration für das deutsche [Techem Mieterportal](https://mieter.techem
 - Home Assistant 2024.1.0 oder neuer
 - HACS (für einfache Installation)
 - Techem Mieterportal Zugangsdaten (E-Mail + Passwort)
-- Property-ID (aus der Portal-URL)
+- Property-ID wird **automatisch erkannt** (optional manuell konfigurierbar)
 
 ## Installation
 
@@ -27,21 +27,22 @@ Custom Integration für das deutsche [Techem Mieterportal](https://mieter.techem
 
 ## Einrichtung
 
-### Property-ID ermitteln
+### Integration konfigurieren
 
-Deine Property-ID findest du in der URL nach dem Login auf mieter.techem.de:
+1. Home Assistant → Einstellungen → Geräte & Dienste
+2. "Integration hinzufügen" → "Techem DE Mieterportal"
+3. E-Mail und Passwort eingeben
+4. Property-ID wird automatisch aus dem Login-Token erkannt – das Feld kann leer bleiben
+5. Aktualisierungsintervall wählen (Standard: 360 Min / 6 Stunden)
+
+### Property-ID manuell ermitteln (Fallback)
+
+Falls die automatische Erkennung nicht funktioniert, findest du deine Property-ID in der URL nach dem Login auf mieter.techem.de:
 ```
 https://mieter.techem.de/de/PRUN:HZ3:DEU01:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/consumptions
                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                               Das ist deine Property-ID
 ```
-
-### Integration konfigurieren
-
-1. Home Assistant → Einstellungen → Geräte & Dienste
-2. "Integration hinzufügen" → "Techem DE Mieterportal"
-3. E-Mail, Passwort und Property-ID eingeben
-4. Aktualisierungsintervall wählen (Standard: 360 Min / 6 Stunden)
 
 ## Sensoren
 
