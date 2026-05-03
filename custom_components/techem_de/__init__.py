@@ -3,11 +3,22 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
+import voluptuous as vol
+
+from homeassistant.components.recorder.statistics import (
+    async_import_statistics,
+)
+from homeassistant.components.recorder.models import (
+    StatisticData,
+    StatisticMetaData,
+    StatisticMeanType,
+)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform, UnitOfEnergy
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import CONF_PROPERTY_ID, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN
@@ -16,6 +27,8 @@ from .techem_api import TechemApiClient, TechemApiError, TechemAuthError
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
+
+SERVICE_IMPORT_HISTORY = "import_history"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -52,7 +65,112 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Register import_history service (once per integration)
+    if not hass.services.has_service(DOMAIN, SERVICE_IMPORT_HISTORY):
+
+        async def async_handle_import_history(call: ServiceCall) -> None:
+            """Import historical consumption data into HA long-term statistics."""
+            for eid, coord in hass.data[DOMAIN].items():
+                await _import_history_for_coordinator(hass, eid, coord)
+
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_IMPORT_HISTORY,
+            async_handle_import_history,
+            schema=vol.Schema({}),
+        )
+
     return True
+
+
+async def _import_history_for_coordinator(
+    hass: HomeAssistant,
+    entry_id: str,
+    coordinator: DataUpdateCoordinator,
+) -> None:
+    """Build cumulative statistics from Techem history and import them."""
+    if not coordinator.data or "services" not in coordinator.data:
+        _LOGGER.warning("No data available for history import")
+        return
+
+    services = coordinator.data["services"]
+
+    for service_key, service_data in services.items():
+        kwh_history = service_data.get("kwh_history", [])
+        if not kwh_history:
+            continue
+
+        # History is newest-first from the API, reverse for chronological order
+        sorted_history = sorted(kwh_history, key=lambda x: x.get("period", ""))
+
+        # Build cumulative sum statistics
+        stats: list[StatisticData] = []
+        cumulative = 0.0
+
+        for item in sorted_history:
+            period = item.get("period")  # Format: "YYYY-MM"
+            value = item.get("value")
+            if period is None or value is None:
+                continue
+
+            # Parse period to datetime (1st of month, midnight, UTC)
+            try:
+                year, month = period.split("-")
+                start = datetime(int(year), int(month), 1, 0, 0, 0, tzinfo=timezone.utc)
+            except (ValueError, IndexError):
+                _LOGGER.warning("Skipping invalid period: %s", period)
+                continue
+
+            cumulative = round(cumulative + value, 1)
+
+            stats.append(
+                StatisticData(
+                    start=start,
+                    state=cumulative,
+                    sum=cumulative,
+                )
+            )
+
+        if not stats:
+            continue
+
+        # Find the actual entity_id of the Energy Dashboard sensor from the entity registry
+        entity_registry = er.async_get(hass)
+        target_unique_id = f"{entry_id}_{service_key}_energy_dashboard"
+        statistic_id = None
+        for entity in entity_registry.entities.values():
+            if entity.unique_id == target_unique_id and entity.domain == "sensor":
+                statistic_id = entity.entity_id
+                break
+
+        if not statistic_id:
+            # Fallback: construct expected entity_id
+            from .sensor import SERVICE_NAMES
+            name = SERVICE_NAMES.get(service_key, service_key.replace("_", " ").title())
+            statistic_id = f"sensor.techem_{name.lower()}_energieverbrauch_dashboard_"
+            _LOGGER.warning(
+                "Could not find entity for unique_id %s, using fallback: %s",
+                target_unique_id,
+                statistic_id,
+            )
+
+        metadata = StatisticMetaData(
+            has_sum=True,
+            mean_type=StatisticMeanType.NONE,
+            name=f"Techem Energieverbrauch (Dashboard)",
+            source="recorder",
+            statistic_id=statistic_id,
+            unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+            unit_class="energy",
+        )
+
+        async_import_statistics(hass, metadata, stats)
+        _LOGGER.info(
+            "Imported %d historical statistics for %s (total: %.1f kWh)",
+            len(stats),
+            statistic_id,
+            cumulative,
+        )
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

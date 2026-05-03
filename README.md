@@ -63,6 +63,16 @@ Der Sensor **"Techem Heizung Energieverbrauch (Dashboard)"** ist speziell für d
 
 Dieser Sensor summiert alle historischen Monatsverbräuche zu einem stetig steigenden Zählerstand auf. So kann das Energie-Dashboard den Verbrauch korrekt darstellen. Beim ersten Start wird der Gesamtverbrauch aus den letzten 26 Monaten berechnet.
 
+### Historische Daten importieren
+
+Um die Verbrauchsdaten der letzten 26 Monate nachträglich ins Energie-Dashboard zu laden:
+
+1. Entwicklerwerkzeuge → Dienste
+2. Dienst `techem_de.import_history` auswählen
+3. "Dienst aufrufen" klicken
+
+Die historischen Monatswerte werden als kumulative Statistik importiert. Danach zeigt das Energie-Dashboard auch den Verbrauch vergangener Monate an. Dieser Dienst muss nur **einmalig** aufgerufen werden.
+
 ## Bekannte Einschränkungen
 
 - **Azure AD B2C**: Die Authentifizierung nutzt den programmatischen Login-Flow. Falls Techem CAPTCHA aktiviert, kann der Login fehlschlagen.
