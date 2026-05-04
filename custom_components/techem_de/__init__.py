@@ -8,8 +8,10 @@ from datetime import datetime, timedelta, timezone
 
 import voluptuous as vol
 
+from homeassistant.components.recorder import get_instance as get_recorder_instance
 from homeassistant.components.recorder.statistics import (
     async_import_statistics,
+    clear_statistics,
 )
 from homeassistant.components.recorder.models import (
     StatisticData,
@@ -175,13 +177,16 @@ async def _import_history_for_coordinator(
         )
 
         # Clear old statistics before importing new ones
-        await hass.services.async_call(
-            "recorder",
-            "clear_statistics",
-            {"statistic_ids": [statistic_id]},
-            blocking=True,
-        )
-        _LOGGER.info("Cleared old statistics for %s", statistic_id)
+        try:
+            instance = get_recorder_instance(hass)
+            await instance.async_add_executor_job(
+                clear_statistics, instance, [statistic_id]
+            )
+            _LOGGER.info("Cleared old statistics for %s", statistic_id)
+        except Exception as err:
+            _LOGGER.warning(
+                "Could not clear old statistics for %s: %s", statistic_id, err
+            )
 
         async_import_statistics(hass, metadata, stats)
         _LOGGER.info(
