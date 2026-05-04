@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 import voluptuous as vol
 
 from homeassistant.components.recorder.statistics import (
+    async_clear_statistics,
     async_import_statistics,
 )
 from homeassistant.components.recorder.models import (
@@ -173,6 +174,9 @@ async def _import_history_for_coordinator(
             unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
             unit_class="energy",
         )
+
+        async_clear_statistics(hass, [statistic_id])
+        _LOGGER.info("Cleared old statistics for %s", statistic_id)
 
         async_import_statistics(hass, metadata, stats)
         _LOGGER.info(
