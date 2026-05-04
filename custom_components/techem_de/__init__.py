@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import calendar
 import logging
 from datetime import datetime, timedelta, timezone
 
@@ -113,10 +114,11 @@ async def _import_history_for_coordinator(
             if period is None or value is None:
                 continue
 
-            # Parse period to datetime (1st of month, midnight, UTC)
+            # Parse period to datetime (last day of month, midnight, UTC)
             try:
                 year, month = period.split("-")
-                start = datetime(int(year), int(month), 1, 0, 0, 0, tzinfo=timezone.utc)
+                last_day = calendar.monthrange(int(year), int(month))[1]
+                start = datetime(int(year), int(month), last_day, 0, 0, 0, tzinfo=timezone.utc)
             except (ValueError, IndexError):
                 _LOGGER.warning("Skipping invalid period: %s", period)
                 continue
