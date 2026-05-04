@@ -32,6 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 SERVICE_IMPORT_HISTORY = "import_history"
+SERVICE_CLEAR_HISTORY = "clear_history"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -80,6 +81,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             DOMAIN,
             SERVICE_IMPORT_HISTORY,
             async_handle_import_history,
+            schema=vol.Schema({}),
+        )
+
+    # Register clear_history service (once per integration)
+    if not hass.services.has_service(DOMAIN, SERVICE_CLEAR_HISTORY):
+
+        async def async_handle_clear_history(call: ServiceCall) -> None:
+            """Clear all statistics for dashboard entities."""
+            for eid in hass.data[DOMAIN]:
+                await _clear_history_for_entry(hass, eid)
+
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_CLEAR_HISTORY,
+            async_handle_clear_history,
             schema=vol.Schema({}),
         )
 
@@ -195,6 +211,38 @@ async def _import_history_for_coordinator(
             statistic_id,
             cumulative,
         )
+
+
+async def _clear_history_for_entry(
+    hass: HomeAssistant,
+    entry_id: str,
+) -> None:
+    """Clear all long-term statistics for dashboard entities of a config entry."""
+    from .sensor import SERVICE_NAMES
+
+    entity_registry = er.async_get(hass)
+
+    # Collect all dashboard statistic_ids for this entry
+    statistic_ids: list[str] = []
+    for service_key in SERVICE_NAMES:
+        target_unique_id = f"{entry_id}_{service_key}_energy_dashboard"
+        for entity in entity_registry.entities.values():
+            if entity.unique_id == target_unique_id and entity.domain == "sensor":
+                statistic_ids.append(entity.entity_id)
+                break
+
+    if not statistic_ids:
+        _LOGGER.warning("No dashboard entities found for entry %s", entry_id)
+        return
+
+    try:
+        instance = get_recorder_instance(hass)
+        await instance.async_add_executor_job(
+            clear_statistics, instance, statistic_ids
+        )
+        _LOGGER.info("Cleared statistics for: %s", statistic_ids)
+    except Exception as err:
+        _LOGGER.error("Failed to clear statistics: %s", err)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

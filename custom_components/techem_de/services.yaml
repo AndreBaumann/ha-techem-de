@@ -5,3 +5,9 @@ import_history:
     aus dem Techem Mieterportal in die Home Assistant Langzeitstatistik.
     Die Daten erscheinen danach im Energie-Dashboard.
     Dieser Service muss nur einmalig aufgerufen werden.
+
+clear_history:
+  name: Verbrauchshistorie löschen
+  description: >
+    Löscht alle importierten Langzeitstatistik-Daten der
+    Techem Energieverbrauch Dashboard-Entitäten.
