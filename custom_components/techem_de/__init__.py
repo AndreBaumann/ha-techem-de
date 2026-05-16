@@ -68,6 +68,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Auto-import statistics after each coordinator update
+    async def _auto_import_after_update() -> None:
+        """Import statistics whenever the coordinator refreshes successfully."""
+        if coordinator.data:
+            await _import_history_for_coordinator(hass, entry.entry_id, coordinator)
+
+    coordinator.async_add_listener(lambda: hass.async_create_task(_auto_import_after_update()))
+
     # Register import_history service (once per integration)
     if not hass.services.has_service(DOMAIN, SERVICE_IMPORT_HISTORY):
 
