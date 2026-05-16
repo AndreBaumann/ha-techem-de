@@ -50,9 +50,9 @@ https://mieter.techem.de/de/PRUN:HZ3:DEU01:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/con
 |--------|-------------|---------|
 | Techem Heizung | Aktueller Monatsverbrauch | kWh |
 | Techem Heizung Energieverbrauch (Dashboard) | Kumulierter Gesamtverbrauch für das HA Energie-Dashboard | kWh |
-| Techem Heizung Gebäudedurchschnitt | Vergleichbare Haushalte | kWh |
+| Techem Heizung Gebäudedurchschnitt | Gebäudedurchschnitt zum Vergleich | kWh |
 | Techem Heizung HCU | Heizkostenverteiler-Einheiten | HCU |
-| Warmwasser Volumen | Warmwasserverbrauch (falls vorhanden) | m³ |
+| Techem Warmwasser Volumen | Warmwasserverbrauch (falls vorhanden) | m³ |
 
 ### Energie-Dashboard
 
@@ -66,13 +66,23 @@ Dieser Sensor summiert alle historischen Monatsverbräuche zu einem stetig steig
 
 ### Historische Daten importieren
 
-Um die Verbrauchsdaten der letzten 26 Monate nachträglich ins Energie-Dashboard zu laden:
+Um die Verbrauchsdaten nachträglich ins Energie-Dashboard zu laden (alle bei Techem verfügbaren Monate):
 
-1. Entwicklerwerkzeuge → Dienste
-2. Dienst `techem_de.import_history` auswählen
-3. "Dienst aufrufen" klicken
+1. Entwicklerwerkzeuge → Aktionen
+2. Aktion `techem_de.import_history` auswählen
+3. "Aktion ausführen" klicken
 
 Die historischen Monatswerte werden als kumulative Statistik importiert. Danach zeigt das Energie-Dashboard auch den Verbrauch vergangener Monate an. Dieser Dienst muss nur **einmalig** aufgerufen werden.
+
+> **Hinweis:** Wird der Import erneut ausgeführt, werden die bisherigen Statistikdaten automatisch gelöscht und sauber neu importiert.
+
+### Historische Daten löschen
+
+Um die importierten Langzeitstatistiken zu entfernen:
+
+1. Entwicklerwerkzeuge → Aktionen
+2. Aktion `techem_de.clear_history` auswählen
+3. "Aktion ausführen" klicken
 
 ## Bekannte Einschränkungen
 
