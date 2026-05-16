@@ -153,14 +153,6 @@ async def _import_history_for_coordinator(
         if not stats:
             continue
 
-        # Offset all sum values so the last entry has sum=0.
-        # This ensures continuity with the live sensor statistics,
-        # which start at sum=0 when the entity is first created
-        # (TOTAL_INCREASING uses the first-seen value as zero-point).
-        total_offset = stats[-1]["sum"]
-        for stat in stats:
-            stat["sum"] = round(stat["sum"] - total_offset, 1)
-
         # Find the actual entity_id of the Energy Dashboard sensor from the entity registry
         entity_registry = er.async_get(hass)
         target_unique_id = f"{entry_id}_{service_key}_energy_dashboard"
