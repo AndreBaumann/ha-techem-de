@@ -2,7 +2,7 @@ import_history:
   name: Verbrauchshistorie importieren
   description: >
     Importiert alle bei Techem verfügbaren historischen Monatsverbrauchsdaten
-    in die Home Assistant Langzeitstatistik.
+    (bis zu 36 Monate) in die Home Assistant Langzeitstatistik.
     Die Daten erscheinen danach im Energie-Dashboard.
     Dieser Service muss nur einmalig aufgerufen werden.
 

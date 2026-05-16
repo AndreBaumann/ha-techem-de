@@ -66,7 +66,7 @@ Dieser Sensor summiert alle historischen Monatsverbräuche zu einem stetig steig
 
 ### Historische Daten importieren
 
-Um die Verbrauchsdaten nachträglich ins Energie-Dashboard zu laden (alle bei Techem verfügbaren Monate):
+Um die Verbrauchsdaten nachträglich ins Energie-Dashboard zu laden (bis zu 36 Monate, abhängig von der Verfügbarkeit bei Techem):
 
 1. Entwicklerwerkzeuge → Aktionen
 2. Aktion `techem_de.import_history` auswählen
