@@ -62,19 +62,21 @@ Der Sensor **"Techem Heizung Energieverbrauch (Dashboard)"** ist speziell für d
 2. **Gasverbrauch** → Sensor hinzufügen
 3. Den Sensor `Techem Heizung Energieverbrauch (Dashboard)` auswählen
 
-Dieser Sensor summiert alle historischen Monatsverbräuche zu einem stetig steigenden Zählerstand auf. So kann das Energie-Dashboard den Verbrauch korrekt darstellen. Beim ersten Start wird der Gesamtverbrauch aus den letzten 26 Monaten berechnet.
+Dieser Sensor zeigt den kumulierten Gesamtverbrauch aus allen verfügbaren Monaten. Die Statistik-Daten für das Energie-Dashboard werden **automatisch alle 6 Stunden** importiert (bei jedem Coordinator-Update). Ein manueller Import ist nicht nötig.
 
-### Historische Daten importieren
+### Automatischer Statistik-Import
 
-Um die Verbrauchsdaten nachträglich ins Energie-Dashboard zu laden (bis zu 36 Monate, abhängig von der Verfügbarkeit bei Techem):
+Die Verbrauchsdaten werden **automatisch** bei jedem Coordinator-Update (alle 6 Stunden) als Langzeitstatistik ins Energie-Dashboard importiert. Neue Monate werden hinzugefügt, bestehende Einträge aktualisiert – ohne die vorhandenen Daten zu löschen.
+
+### Manueller Neuimport
+
+Falls die Statistiken inkonsistent sind oder ein sauberer Neuimport gewünscht ist:
 
 1. Entwicklerwerkzeuge → Aktionen
 2. Aktion `techem_de.import_history` auswählen
 3. "Aktion ausführen" klicken
 
-Die historischen Monatswerte werden als kumulative Statistik importiert. Danach zeigt das Energie-Dashboard auch den Verbrauch vergangener Monate an. Dieser Dienst muss nur **einmalig** aufgerufen werden.
-
-> **Hinweis:** Wird der Import erneut ausgeführt, werden die bisherigen Statistikdaten automatisch gelöscht und sauber neu importiert.
+> **Hinweis:** Der manuelle Import **löscht** zuerst alle bisherigen Statistikdaten und importiert dann alles sauber neu (bis zu 36 Monate, abhängig von der Verfügbarkeit bei Techem).
 
 ### Historische Daten löschen
 
