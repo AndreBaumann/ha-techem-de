@@ -11,7 +11,6 @@ import voluptuous as vol
 from homeassistant.components.recorder import get_instance as get_recorder_instance
 from homeassistant.components.recorder.statistics import (
     async_import_statistics,
-    clear_statistics,
 )
 from homeassistant.components.recorder.models import (
     StatisticData,
@@ -195,9 +194,7 @@ async def _import_history_for_coordinator(
         # Clear old statistics before importing new ones
         try:
             instance = get_recorder_instance(hass)
-            await instance.async_add_executor_job(
-                clear_statistics, instance, [statistic_id]
-            )
+            instance.async_clear_statistics([statistic_id])
             _LOGGER.info("Cleared old statistics for %s", statistic_id)
         except Exception as err:
             _LOGGER.warning(
@@ -237,9 +234,7 @@ async def _clear_history_for_entry(
 
     try:
         instance = get_recorder_instance(hass)
-        await instance.async_add_executor_job(
-            clear_statistics, instance, statistic_ids
-        )
+        instance.async_clear_statistics(statistic_ids)
         _LOGGER.info("Cleared statistics for: %s", statistic_ids)
     except Exception as err:
         _LOGGER.error("Failed to clear statistics: %s", err)
