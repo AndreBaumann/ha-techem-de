@@ -90,6 +90,7 @@ Um die importierten Langzeitstatistiken zu entfernen:
 - **Keine offizielle API**: Diese Integration basiert auf Reverse Engineering des Web-Portals. Endpunkte können sich bei Updates ändern.
 - **Rate Limiting**: Das Aktualisierungsintervall sollte nicht unter 60 Minuten gesetzt werden.
 - **Monatliche Auflösung**: Techem liefert Verbrauchsdaten nur monatlich. Der Dashboard-Sensor aktualisiert sich erst wenn ein neuer Monat in der API erscheint.
+- **Datumszuordnung**: Techem stellt die Verbrauchsdaten eines Monats erst ca. am 4.–5. des Folgemonats bereit. Die Daten werden trotzdem auf den **letzten Tag des jeweiligen Verbrauchsmonats** gebucht. Beispiel: Die Mai-Daten erscheinen Anfang Juni in der API, werden aber auf den 31. Mai gebucht – so wird der Verbrauch im Energie-Dashboard dem korrekten Monat zugeordnet.
 
 ## Troubleshooting
 
