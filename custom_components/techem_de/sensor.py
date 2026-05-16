@@ -306,7 +306,6 @@ class TechemEnergyDashboardSensor(CoordinatorEntity, RestoreEntity, SensorEntity
     """
 
     _attr_device_class = SensorDeviceClass.ENERGY
-    _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
 
     def __init__(
