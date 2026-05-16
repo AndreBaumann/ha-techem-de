@@ -72,7 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def _auto_import_after_update() -> None:
         """Import statistics whenever the coordinator refreshes successfully."""
         if coordinator.data:
-            await _import_history_for_coordinator(hass, entry.entry_id, coordinator)
+            await _import_history_for_coordinator(hass, entry.entry_id, coordinator, clear=False)
 
     coordinator.async_add_listener(lambda: hass.async_create_task(_auto_import_after_update()))
 
@@ -113,6 +113,7 @@ async def _import_history_for_coordinator(
     hass: HomeAssistant,
     entry_id: str,
     coordinator: DataUpdateCoordinator,
+    clear: bool = True,
 ) -> None:
     """Build cumulative statistics from Techem history and import them."""
     if not coordinator.data or "services" not in coordinator.data:
@@ -191,15 +192,16 @@ async def _import_history_for_coordinator(
             unit_class="energy",
         )
 
-        # Clear old statistics before importing new ones
-        try:
-            instance = get_recorder_instance(hass)
-            instance.async_clear_statistics([statistic_id])
-            _LOGGER.info("Cleared old statistics for %s", statistic_id)
-        except Exception as err:
-            _LOGGER.warning(
-                "Could not clear old statistics for %s: %s", statistic_id, err
-            )
+        # Clear old statistics before importing new ones (only when explicitly requested)
+        if clear:
+            try:
+                instance = get_recorder_instance(hass)
+                instance.async_clear_statistics([statistic_id])
+                _LOGGER.info("Cleared old statistics for %s", statistic_id)
+            except Exception as err:
+                _LOGGER.warning(
+                    "Could not clear old statistics for %s: %s", statistic_id, err
+                )
 
         async_import_statistics(hass, metadata, stats)
         _LOGGER.info(
