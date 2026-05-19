@@ -20,7 +20,6 @@ from homeassistant.components.recorder.models import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform, UnitOfEnergy
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import CONF_PROPERTY_ID, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN
@@ -162,31 +161,16 @@ async def _import_history_for_coordinator(
         if not stats:
             continue
 
-        # Find the actual entity_id of the Energy Dashboard sensor from the entity registry
-        entity_registry = er.async_get(hass)
-        target_unique_id = f"{entry_id}_{service_key}_energy_dashboard"
-        statistic_id = None
-        for entity in entity_registry.entities.values():
-            if entity.unique_id == target_unique_id and entity.domain == "sensor":
-                statistic_id = entity.entity_id
-                break
-
-        if not statistic_id:
-            # Fallback: construct expected entity_id
-            from .sensor import SERVICE_NAMES
-            name = SERVICE_NAMES.get(service_key, service_key.replace("_", " ").title())
-            statistic_id = f"sensor.techem_{name.lower()}_energieverbrauch_dashboard_"
-            _LOGGER.warning(
-                "Could not find entity for unique_id %s, using fallback: %s",
-                target_unique_id,
-                statistic_id,
-            )
+        # Use external statistics (source: "techem_de") to avoid recorder conflicts
+        from .sensor import SERVICE_NAMES
+        name = SERVICE_NAMES.get(service_key, service_key.replace("_", " ").title())
+        statistic_id = f"{DOMAIN}:{service_key}_energy"
 
         metadata = StatisticMetaData(
             has_sum=True,
             mean_type=StatisticMeanType.NONE,
-            name=f"Techem Energieverbrauch (Dashboard)",
-            source="recorder",
+            name=f"Techem {name} Energieverbrauch",
+            source=DOMAIN,
             statistic_id=statistic_id,
             unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
             unit_class="energy",
@@ -219,19 +203,13 @@ async def _clear_history_for_entry(
     """Clear all long-term statistics for dashboard entities of a config entry."""
     from .sensor import SERVICE_NAMES
 
-    entity_registry = er.async_get(hass)
-
-    # Collect all dashboard statistic_ids for this entry
+    # Collect all external statistic_ids for this integration
     statistic_ids: list[str] = []
     for service_key in SERVICE_NAMES:
-        target_unique_id = f"{entry_id}_{service_key}_energy_dashboard"
-        for entity in entity_registry.entities.values():
-            if entity.unique_id == target_unique_id and entity.domain == "sensor":
-                statistic_ids.append(entity.entity_id)
-                break
+        statistic_ids.append(f"{DOMAIN}:{service_key}_energy")
 
     if not statistic_ids:
-        _LOGGER.warning("No dashboard entities found for entry %s", entry_id)
+        _LOGGER.warning("No statistics found for entry %s", entry_id)
         return
 
     try:
